@@ -1,7 +1,11 @@
+"TODO - Tem que organizar isso aqui, aí até fica legal!"
 from keras.utils import get_file
-import resources
+from enum import Enum
 
 GVCPUC = "GVC_PUC"
+
+class Resources(Enum):
+    GVC_URL = "https://github.com/rodsnjr/gvc_dataset/archive/master.zip"
 
 class Dataset:
     def __init__(self, path, validation_path, test_path, classes):
@@ -54,9 +58,3 @@ def load_csv_dataset(dataset=GVCPUC):
     path = __extract(dataset, download)
     if dataset == GVCPUC:
         return __load_csv_gvcds(path)
-
-def __load_csv_gvcds(path):
-    return CSVDataset(path + "/gvc_dataset-master", "annotation.csv", "validation.csv", "test.csv")
-
-def __load_gvcds(path):
-    return Dataset(path + "/gvc_dataset-master", "/validation/", "/test/", ["Doors", "Indoors"])

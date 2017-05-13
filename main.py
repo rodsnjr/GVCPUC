@@ -1,9 +1,9 @@
 """
     Testing a Simple SVM with HoG Features
 """
-from general.files.loaders import FeatureLoader
-from classifiers.model import SVC
-from classifiers.bow import BOW
+from gvc.general.files.loaders import FeatureLoader
+from gvc.classifiers.model import SVC
+from gvc.classifiers.bow import BOW
 
 # Tá na minha máquina na minha casa ...
 def local_loader():
@@ -16,22 +16,9 @@ def local_loader():
 
     return train_flow, test_flow
 
-def web_loader():
-    import general.files.datasets as datasets
-    
-    gvcp = datasets.load_csv_dataset()
-    loader = FeatureLoader(
-        dataset=gvcp
-    )
-
-    train_flow = loader.crop_flow_from_csv("/" + gvcp.dataset_csv)
-    test_flow = loader.crop_flow_from_csv("/" + gvcp.test_csv)
-
-    return train_flow, test_flow
-
 if __name__ == "__main__":
     
-    # train_flow, test_flow = web_loader()
+    train_flow, test_flow = local_loader()
 
     # Simple SVM
     mySvm = SVC()
