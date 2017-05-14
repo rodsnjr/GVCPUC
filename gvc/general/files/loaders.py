@@ -1,3 +1,4 @@
+" Dataset loaders "
 import numpy
 import resources
 
@@ -12,6 +13,10 @@ def default_label_parser(label):
     if label == 'door':
         return 1
     elif label == 'indoors':
+        return 2
+    else:
+        # TODO - adiciona stairs depois né
+        # O primeiro paper vai ser só "indoors, e doors"
         return 2
 
 def default_hog(image):
@@ -29,6 +34,14 @@ class Flow:
         self.x.append(x)
         self.y.append(y)
     
+    def extract_flow(self, size):
+        " Get a new Flow of size "
+        # TODO achar um jeito de emparelhar a qtd de labels
+        flow = Flow()
+        for i in range(size):
+            flow.add(self.x.pop(), self.y.pop())
+        return flow
+    
     def X(self):
         if self.numpyX is None:
             self.numpyX = numpy.array(self.x)
@@ -40,9 +53,11 @@ class Flow:
         return self.numpyY
 
 class ImageLoader:
-    def __init__(self, path=resources.LOADER_GVCPDIR, dataset=None, size=(100, 100), channels='gray'):
+    def __init__(self, path, dataset=None, size=(100, 100), channels='gray'):
         if dataset is not None:
             self.path = dataset.path
+        else:
+            self.path = path
 
         self.size = size
         self.channels = channels
@@ -94,21 +109,37 @@ class ImageLoader:
                     flowLoader.add(self.pre_process(crop), label)
         
         return flowLoader
-    
-    def flow_from_csv(self, file, lparser=default_label_parser):
+
+    def crop_flow_from_csvs(self, files, lparser=default_labels_parser):
         import csv
 
         flowLoader = Flow()
 
-        with open(self.path + file, newline='') as csvfile:
+        for arq in files:
+            # Read each CSV
+            with open(self.path + arq, newline='') as csvfile:
+                lines = csv.reader(csvfile)
+                for line in lines:
+                    img, labels = self.__parse_csv_line(line)
+                    blabels = lparser(labels)
+                    for crop, label in zip(self.__crop(img), blabels):
+                        flowLoader.add(self.pre_process(crop), label)
+
+        return flowLoader
+
+    def flow_from_csv(self, arq, lparser=default_label_parser):
+        import csv
+
+        flowLoader = Flow()
+        with open(self.path + arq, newline='') as csvfile:
             lines = csv.reader(csvfile)
             for line in lines:
                 img, label = self.__parse_csv_line(line)
                 blabel = lparser(label)
                 flowLoader.add(self.pre_process(img), blabel)
-        
+
         return flowLoader
-   
+
     def flow_from_directory(self, classes):
         from skimage import io
 
@@ -123,7 +154,7 @@ class ImageLoader:
 
 
 class FeatureLoader(ImageLoader):
-    def __init__(self, path=resources.LOADER_GVCPDIR, dataset=None, size=(100, 100), channels='gray',  features = default_hog):
+    def __init__(self, path, dataset=None, size=(100, 100), channels='gray',  features = default_hog):
         super().__init__(path, dataset=dataset, size=size, channels=channels)
         self.features = features
     

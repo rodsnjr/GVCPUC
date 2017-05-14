@@ -1,4 +1,5 @@
-from general.application.launch import launch
+" Cliente para anotar diretórios de imagens com nossas labels "
+from gvc.general.application.launch import launch
 import argparse
 # Rodar o cliente que lê um diretório e guarda o CSV do Dataset (deste diretório)
 # Teclas:

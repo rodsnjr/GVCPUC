@@ -5,19 +5,16 @@ from gvc.general.files.loaders import FeatureLoader
 from gvc.classifiers.model import SVC
 from gvc.classifiers.bow import BOW
 
-# Tá na minha máquina na minha casa ...
 def local_loader():
-    loader = FeatureLoader(
-        path='C:/Imagens Treinamento/'
-    )
+    # TODO - tem que colocar um args parser pra esses caras ...
+    loader = FeatureLoader('D:/Datasets/gvc_dataset/')
 
-    train_flow = loader.crop_flow_from_csv('annotation.csv')
-    test_flow = loader.crop_flow_from_csv('test.csv')
-
+    train_flow = loader.crop_flow_from_csvs(['dataset_door.csv','dataset_indoor.csv', 'dataset_stairs.csv'])
+    test_flow = train_flow.extract_flow(1000)
     return train_flow, test_flow
 
 if __name__ == "__main__":
-    
+
     train_flow, test_flow = local_loader()
 
     # Simple SVM
