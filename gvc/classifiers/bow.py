@@ -3,6 +3,10 @@ from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 from scipy.cluster.vq import vq
+# Validations
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score, cross_val_predict
+from sklearn import metrics
 
 class BOW():
     def __init__(self):
@@ -24,6 +28,14 @@ class BOW():
         # vocabX = np.array([self.kmeans.predict(val) for val in x])
         histX = np.array([self.__computeHistogram(val) for val in x])
         return self.clf.score(histX, y)
+    
+    def cross_val(self, x, y):
+        histX = np.array([self.__computeHistogram(val) for val in x])
+        predicted = cross_val_predict(self.clf, histX, y, cv=10)
+        return metrics.accuracy_score(y, predicted)
+    
+    def histX(self, x):
+        return np.array([self.__computeHistogram(val) for val in x])
 
     def evaluate_flow(self, flow):
         return self.evaluate(flow.X(), flow.Y())

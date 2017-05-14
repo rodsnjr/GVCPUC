@@ -117,13 +117,17 @@ class ImageLoader:
 
         for arq in files:
             # Read each CSV
-            with open(self.path + arq, newline='') as csvfile:
-                lines = csv.reader(csvfile)
-                for line in lines:
-                    img, labels = self.__parse_csv_line(line)
-                    blabels = lparser(labels)
-                    for crop, label in zip(self.__crop(img), blabels):
-                        flowLoader.add(self.pre_process(crop), label)
+            try:
+                with open(self.path + arq, newline='') as csvfile:
+                    lines = csv.reader(csvfile)
+                    for line in lines:
+                        img, labels = self.__parse_csv_line(line)
+                        blabels = lparser(labels)
+                        for crop, label in zip(self.__crop(img), blabels):
+                            flowLoader.add(self.pre_process(crop), label)
+            except Exception as e:
+                print("Arquivo errado {} : {} : {}".format(e, arq, line[0]))
+        
 
         return flowLoader
 
