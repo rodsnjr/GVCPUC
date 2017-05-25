@@ -1,3 +1,4 @@
+# coding=utf-8
 from sklearn.cluster import KMeans
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler

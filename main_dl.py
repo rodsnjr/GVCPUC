@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     flow_training= local_loader(args.dir,args.training)
     flow_testing = local_loader(args.dir,args.testing)
-    
+ 
     datagen = ImageDataGenerator(
         featurewise_center=True,
         featurewise_std_normalization=True,
@@ -88,5 +88,3 @@ if __name__ == "__main__":
     # Depois que carrega a rede ...
     model.fit_generator(datagen.flow(flow_training.x(), flow_training.y(), batch_size=16),steps_per_epoch=len(flow.x()), epochs=50,show_accuracy=True,validation_data=(datagen.flow(flow_testing.x(), flow_testing.y())))
     model.save_weights("fine_tune_inception.h5w")
-
-    

@@ -1,3 +1,4 @@
+# coding=utf-8
 " Dataset loaders "
 import numpy
 import resources
@@ -100,7 +101,7 @@ class ImageLoader:
         
         flowLoader = Flow()
 
-        with open(self.path + file, newline='') as csvfile:
+        with open(self.path + file,'r') as csvfile:
             lines = csv.reader(csvfile)
             for line in lines:
                 img, labels = self.__parse_csv_line(line)
@@ -118,7 +119,7 @@ class ImageLoader:
         for arq in files:
             # Read each CSV
             try:
-                with open(self.path + arq, newline='') as csvfile:
+                with open(self.path + arq, 'r') as csvfile:
                     lines = csv.reader(csvfile)
                     for line in lines:
                         img, labels = self.__parse_csv_line(line)
@@ -135,7 +136,7 @@ class ImageLoader:
         import csv
 
         flowLoader = Flow()
-        with open(self.path + arq, newline='') as csvfile:
+        with open(self.path + arq, 'r') as csvfile:
             lines = csv.reader(csvfile)
             for line in lines:
                 img, label = self.__parse_csv_line(line)
