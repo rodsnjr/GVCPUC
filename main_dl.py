@@ -37,7 +37,7 @@ def load_imgs(PATH,file_name,res,chennels):
     file.close()
 
     images = np.ndarray(shape = (len(lines)*3,res,res,chennels))
-    labels = np.ndarray(shape = (len(lines)*3,1))
+    labels = np.ndarray(shape = (len(lines)*3,2))
 
     counter_img = 0
     counter_lbl = 0
@@ -56,11 +56,11 @@ def load_imgs(PATH,file_name,res,chennels):
         #analisa os labels..
         for i in range(1,4):
             if(buffer_str[i]=="door"):
-                labels[counter_lbl]=1
+                labels[counter_lbl]=[1,0]
             if(buffer_str[i]=="indoors"):
-                labels[counter_lbl]=0
+                labels[counter_lbl]=[0,1]
             if(buffer_str[i]=="stairs"):
-                labels[counter_lbl]=0
+                labels[counter_lbl]=[0,1]
             counter_lbl+=1
     
         #separa as imagens e coloca uma em casa posicao..
@@ -201,50 +201,9 @@ if __name__ == "__main__":
     #In the summary, weights and layers from VGG part will be hidden, but they will be fit during the training
     my_model.summary()
 
-    training_labels_OH = to_categorical(training_labels)
-    testing_labels_OH = to_categorical(testing_labels)
-
+ 
     my_model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy')
     # Depois que carrega a rede ...
-    my_model.fit(training_images,training_labels_OH, batch_size=16, epochs=50,validation_data=(testing_images,testing_labels_OH))
+    my_model.fit(training_images,training_labels, batch_size=16, epochs=50,validation_data=(testing_images,testing_labels))
 
 
-
-    #Use the generated model 
-    #output_vgg16_conv = model_vgg16_conv(input)
-    #top_model = Sequential()
-    #top_model.add(Flatten(input_shape=model.output_shape[1:]))
-    #top_model.add(Dense(256, activation='relu'))
-    #top_model.add(Dropout(0.5))
-    #top_model.add(Dense(1, activation='sigmoid'))
-    
-    # note that it is necessary to start with a fully-trained
-    # classifier, including the top classifier,
-    # in order to successfully do fine-tuning
-    #top_model.load_weights(top_model_weights_path)
-
-
-
-
-
-#    #print training_images[0].shape
-#    #input_tensor = Input(shape=training_images[0].shape) #(numero de imagens, resolucao da imagem)...
-#    input_tensor = Input(tensor=training_images, shape=training_images.shape)
-#    base_model = InceptionV3(input_tensor=input_tensor,weights='imagenet', include_top=False) # importa o inception com o input acima.
-#    # add a global spatial average pooling layer
-#    x = base_model.output
-#    x = GlobalAveragePooling2D()(x) #eh tipo um fully connected, link: https://www.quora.com/What-is-global-average-pooling
-#    x = Dense(1024, activation='relu')(x)
-#    predictions = Dense(2, activation='softmax')(x) #ultima camada da rede, com duas classes. 
-#    model = Model(input=base_model.input, output=predictions)
-#    #seta as camadas 172 para cima para serem treinadas. AS outras nao serao modificadas..
-#    for layer in model.layers[:172]:
-#       layer.trainable = False
-#    for layer in model.layers[172:]:
-#       layer.trainable = True
-#    model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy')
-#    # Depois que carrega a rede ...
-#    model.fit(training_images,training_labels, batch_size=16, epochs=50,validation_data=(testing_images,testing_labels))
-#    #model.fit_generator(datagen.flow(flow_training.x,flow_training.y),steps_per_epoch =16,epochs= 50,show_accuracy=True,validation_data=(datagen.flow(flow_testing.x, flow_testing.y)))
-#    #fit_generator(self, generator, steps_per_epoch, epochs=1, verbose=1, callbacks=None, validation_data=None, validation_steps=None, class_weight=None, max_q_size=10, workers=1, pickle_safe=False, initial_epoch=0)
-#    model.save_weights("fine_tune_inception.h5w")
