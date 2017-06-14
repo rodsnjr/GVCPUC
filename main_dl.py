@@ -173,14 +173,20 @@ if __name__ == "__main__":
 
     training_images,training_labels = load_imgs(args.dir,args.training,300,3)
     testing_images,testing_labels = load_imgs(args.dir,args.testing,300,3)
+    
+    training_images = training_images.astype('float32')
+    testing_images = testing_images.astype('float32')
+    training_images /= 255
+    testing_images /= 255
 
 
     model_vgg16_conv = VGG16(weights='imagenet', include_top=False)
     print('Model loaded.')
     print  model_vgg16_conv.summary()
 
-
     input = Input(shape=training_images[0].shape ,name = 'image_input')
+    
+
     
     output_vgg16_conv = model_vgg16_conv(input)
     #Add the fully-connected layers 
