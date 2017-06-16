@@ -205,5 +205,5 @@ if __name__ == "__main__":
     my_model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy')
     # Depois que carrega a rede ...
     my_model.fit(training_images,training_labels, batch_size=16, epochs=50,validation_data=(testing_images,testing_labels))
-
-
+ 
+    #python main_dl.py --dir E:/Datasets/door_e_indoor/ --training door_e_indoor_training.csv --testing door_e_indoor_testing.csv
