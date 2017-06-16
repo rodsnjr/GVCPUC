@@ -9,7 +9,6 @@ from gvc.classifiers.bow import BOW
 from keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 import sys
-print sys.argv
 
 from keras.applications.inception_v3 import InceptionV3
 from keras.preprocessing import image
