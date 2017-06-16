@@ -165,11 +165,11 @@ if __name__ == "__main__":
         height_shift_range=0.2,
         horizontal_flip=True
     )
-    print "---------------------------------------------"
-    print "---------------------------------------------"
-    print "Formato das imagens channel_last: (300,300,3)"
-    print "---------------------------------------------"
-    print "---------------------------------------------"
+    print ('---------------------------------------------')
+    print ('---------------------------------------------')
+    print ('Formato das imagens channel_last: (300,300,3)')
+    print ('---------------------------------------------')
+    print ('---------------------------------------------')
 
     training_images,training_labels = load_imgs(args.dir,args.training,300,3)
     testing_images,testing_labels = load_imgs(args.dir,args.testing,300,3)
@@ -182,7 +182,7 @@ if __name__ == "__main__":
 
     model_vgg16_conv = VGG16(weights='imagenet', include_top=False)
     print('Model loaded.')
-    print  model_vgg16_conv.summary()
+    print  (model_vgg16_conv.summary())
 
     input = Input(shape=training_images[0].shape ,name = 'image_input')
     
@@ -199,11 +199,10 @@ if __name__ == "__main__":
     my_model = Model(input=input, output=x)
 
     #In the summary, weights and layers from VGG part will be hidden, but they will be fit during the training
-    my_model.summary()
+    print (my_model.summary())
 
  
-    my_model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy')
+    my_model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='binary_crossentropy',metrics=['accuracy'])
     # Depois que carrega a rede ...
     my_model.fit(training_images,training_labels, batch_size=16, epochs=50,validation_data=(testing_images,testing_labels))
-
-
+    model.save_weights('my_model_weights.h5')
