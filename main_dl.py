@@ -9,7 +9,7 @@ from gvc.classifiers.bow import BOW
 from keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 import sys
-#print sys.argv
+print sys.argv
 
 from keras.applications.inception_v3 import InceptionV3
 from keras.preprocessing import image
@@ -20,7 +20,6 @@ from keras.optimizers import SGD
 from keras.layers import Input
 import argparse
 import cv2
-import os
 
 from keras.applications.vgg16 import VGG16
 from keras.preprocessing import image
@@ -32,8 +31,8 @@ from keras.utils.np_utils import to_categorical
 
 
 def load_imgs(PATH,file_name,res,chennels):
-    print(os.path.join(PATH,file_name))
-    file = open(os.path.join(PATH,file_name),"r")
+    #print file_name
+    file = open(PATH+file_name,"r")
     lines = file.readlines()
     file.close()
 
@@ -45,14 +44,12 @@ def load_imgs(PATH,file_name,res,chennels):
     #input de dados para o treinamento. 
     for x in range(0,len(lines)): 
         buffer_str = lines[x].split(',')
-        #print(os.path.join(PATH,buffer_str[0]))
-        img = cv2.imread(os.path.join(PATH,buffer_str[0]))
+        img = cv2.imread(PATH + buffer_str[0])
 
         if(chennels==1):
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         height, width, channels = img.shape
-        #print(img.shape)
         
         buffer = buffer_str[3].splitlines()
         buffer_str[3] = buffer[0]
@@ -67,17 +64,17 @@ def load_imgs(PATH,file_name,res,chennels):
             counter_lbl+=1
     
         #separa as imagens e coloca uma em casa posicao..
-        buffer_img = img[0:height,0:width//3]
+        buffer_img = img[0:height,0:width/3]
         buffer_img = cv2.resize(buffer_img, (res, res)) 
         images[counter_img] = buffer_img
         counter_img+=1
     
-        buffer_img = img[0:height,width//3:2*width//3]
+        buffer_img = img[0:height,width/3:2*width/3]
         buffer_img = cv2.resize(buffer_img, (res, res)) 
         images[counter_img] =buffer_img
         counter_img+=1
     
-        buffer_img = img[0:height,2*width//3:width]
+        buffer_img = img[0:height,2*width/3:width]
         buffer_img = cv2.resize(buffer_img, (res, res)) 
         images[counter_img] =buffer_img
         counter_img+=1
@@ -168,11 +165,11 @@ if __name__ == "__main__":
         height_shift_range=0.2,
         horizontal_flip=True
     )
-    #print "---------------------------------------------"
-    #print "---------------------------------------------"
-    #print "Formato das imagens channel_last: (300,300,3)"
-    #print "----------------------------------load_imgs-----------"
-    #print "---------------------------------------------"
+    print "---------------------------------------------"
+    print "---------------------------------------------"
+    print "Formato das imagens channel_last: (300,300,3)"
+    print "---------------------------------------------"
+    print "---------------------------------------------"
 
     training_images,training_labels = load_imgs(args.dir,args.training,300,3)
     testing_images,testing_labels = load_imgs(args.dir,args.testing,300,3)
@@ -185,7 +182,7 @@ if __name__ == "__main__":
 
     model_vgg16_conv = VGG16(weights='imagenet', include_top=False)
     print('Model loaded.')
-    #print  model_vgg16_conv.summary()
+    print  model_vgg16_conv.summary()
 
     input = Input(shape=training_images[0].shape ,name = 'image_input')
     
@@ -204,10 +201,9 @@ if __name__ == "__main__":
     #In the summary, weights and layers from VGG part will be hidden, but they will be fit during the training
     my_model.summary()
 
-    batch_size=2
  
     my_model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy')
     # Depois que carrega a rede ...
-    my_model.fit(training_images,training_labels, batch_size=batch_size, epochs=50,validation_data=(testing_images,testing_labels))
+    my_model.fit(training_images,training_labels, batch_size=16, epochs=50,validation_data=(testing_images,testing_labels))
 
 
