@@ -18,7 +18,67 @@ from keras import backend as K
 from keras.optimizers import SGD
 from keras.layers import Input
 import argparse
+import cv2
 
+from keras.applications.vgg16 import VGG16
+from keras.preprocessing import image
+from keras.applications.vgg16 import preprocess_input
+from keras.models import Sequential
+from keras.layers.core import Flatten, Dense, Dropout
+from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
+from keras.utils.np_utils import to_categorical
+
+
+def load_imgs(PATH,file_name,res,chennels):
+    #print file_name
+    file = open(PATH+file_name,"r")
+    lines = file.readlines()
+    file.close()
+
+    images = np.ndarray(shape = (len(lines)*3,res,res,chennels))
+    labels = np.ndarray(shape = (len(lines)*3,2))
+
+    counter_img = 0
+    counter_lbl = 0
+    #input de dados para o treinamento. 
+    for x in range(0,len(lines)): 
+        buffer_str = lines[x].split(',')
+        img = cv2.imread(PATH + buffer_str[0])
+
+        if(chennels==1):
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        height, width, channels = img.shape
+        
+        buffer = buffer_str[3].splitlines()
+        buffer_str[3] = buffer[0]
+        #analisa os labels..
+        for i in range(1,4):
+            if(buffer_str[i]=="door"):
+                labels[counter_lbl]=[1,0]
+            if(buffer_str[i]=="indoors"):
+                labels[counter_lbl]=[0,1]
+            if(buffer_str[i]=="stairs"):
+                labels[counter_lbl]=[0,1]
+            counter_lbl+=1
+    
+        #separa as imagens e coloca uma em casa posicao..
+        buffer_img = img[0:height,0:width/3]
+        buffer_img = cv2.resize(buffer_img, (res, res)) 
+        images[counter_img] = buffer_img
+        counter_img+=1
+    
+        buffer_img = img[0:height,width/3:2*width/3]
+        buffer_img = cv2.resize(buffer_img, (res, res)) 
+        images[counter_img] =buffer_img
+        counter_img+=1
+    
+        buffer_img = img[0:height,2*width/3:width]
+        buffer_img = cv2.resize(buffer_img, (res, res)) 
+        images[counter_img] =buffer_img
+        counter_img+=1
+    
+    return images,labels
 
 
 def parse():
@@ -33,20 +93,69 @@ def parse():
     return args
 
 def local_loader(path_name,filename):
-    # TODO - tem que colocar um args parser pra esses caras ...
     loader = ImageLoader(path_name)
 
     flow = loader.crop_flow_from_csv(filename)
     # test_flow = train_flow.extract_flow(1000)
     return flow
 
+#def VGG_16(weights_path=None):
+#    model = Sequential()
+#    model.add(ZeroPadding2D((1,1),input_shape=(3,224,224)))
+#    model.add(Convolution2D(64, 3, 3, activation='relu'))
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(64, 3, 3, activation='relu'))
+#    model.add(MaxPooling2D((2,2), strides=(2,2)))
+#
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(128, 3, 3, activation='relu'))
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(128, 3, 3, activation='relu'))
+#    model.add(MaxPooling2D((2,2), strides=(2,2)))
+#
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(256, 3, 3, activation='relu'))
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(256, 3, 3, activation='relu'))
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(256, 3, 3, activation='relu'))
+#    model.add(MaxPooling2D((2,2), strides=(2,2)))
+#
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(512, 3, 3, activation='relu'))
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(512, 3, 3, activation='relu'))
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(512, 3, 3, activation='relu'))
+#    model.add(MaxPooling2D((2,2), strides=(2,2)))
+#
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(512, 3, 3, activation='relu'))
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(512, 3, 3, activation='relu'))
+#    model.add(ZeroPadding2D((1,1)))
+#    model.add(Convolution2D(512, 3, 3, activation='relu'))
+#    model.add(MaxPooling2D((2,2), strides=(2,2)))
+#
+#    model.add(Flatten())
+#    model.add(Dense(4096, activation='relu'))
+#    model.add(Dropout(0.5))
+#    model.add(Dense(4096, activation='relu'))
+#    model.add(Dropout(0.5))
+#    model.add(Dense(1000, activation='softmax'))
+#
+#    if weights_path:
+#        model.load_weights(weights_path)
+#
+#    return model
+
 if __name__ == "__main__":
 
     args = parse()
 
-    flow_training= local_loader(args.dir,args.training)
-    flow_testing = local_loader(args.dir,args.testing)
- 
+    #flow_training= local_loader(args.dir,args.training)
+    #flow_testing = local_loader(args.dir,args.testing)
+    
     datagen = ImageDataGenerator(
         featurewise_center=True,
         featurewise_std_normalization=True,
@@ -55,35 +164,44 @@ if __name__ == "__main__":
         height_shift_range=0.2,
         horizontal_flip=True
     )
+    print ('---------------------------------------------')
+    print ('---------------------------------------------')
+    print ('Formato das imagens channel_last: (300,300,3)')
+    print ('---------------------------------------------')
+    print ('---------------------------------------------')
 
-
-    input_tensor = Input(shape=(300, 300, 3))  # this assumes K.image_data_format() == 'channels_last'
-
-    base_model = InceptionV3(input_tensor=input_tensor,weights='imagenet', include_top=True)
-   
-    # add a global spatial average pooling layer
-    x = base_model.output
-    x = GlobalAveragePooling2D()(x)
-    x = Dense(1024, activation='relu')(x)
-    predictions = Dense(2, activation='softmax')(x)
-
-    #modelo a ser treinado
-    model = Model(inputs=base_model.input, outputs=predictions)
-    #model.compile(optimizer='rmsprop', loss='categorical_crossentropy')
-
-    for layer in model.layers[:172]:
-       layer.trainable = False
-    for layer in model.layers[172:]:
-       layer.trainable = True
+    training_images,training_labels = load_imgs(args.dir,args.training,300,3)
+    testing_images,testing_labels = load_imgs(args.dir,args.testing,300,3)
     
-    model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy')
+    training_images = training_images.astype('float32')
+    testing_images = testing_images.astype('float32')
+    training_images /= 255
+    testing_images /= 255
 
-#    print base_model.summary()
-#
-#    for i, layer in enumerate(base_model.layers):
-#        print(i, layer.name)
-    #model = build_model()
+
+    model_vgg16_conv = VGG16(weights='imagenet', include_top=False)
+    print('Model loaded.')
+    print  (model_vgg16_conv.summary())
+
+    input = Input(shape=training_images[0].shape ,name = 'image_input')
     
+
+    
+    output_vgg16_conv = model_vgg16_conv(input)
+    #Add the fully-connected layers 
+    x = Flatten(name='flatten')(output_vgg16_conv)
+    x = Dense(4096, activation='relu', name='fc1')(x)
+    x = Dense(4096, activation='relu', name='fc2')(x)
+    x = Dense(2, activation='softmax', name='predictions')(x)
+
+    #Create your own model 
+    my_model = Model(input=input, output=x)
+
+    #In the summary, weights and layers from VGG part will be hidden, but they will be fit during the training
+    print (my_model.summary())
+
+ 
+    my_model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='binary_crossentropy',metrics=['accuracy'])
     # Depois que carrega a rede ...
-    model.fit_generator(datagen.flow(flow_training.x(), flow_training.y(), batch_size=16),steps_per_epoch=len(flow.x()), epochs=50,show_accuracy=True,validation_data=(datagen.flow(flow_testing.x(), flow_testing.y())))
-    model.save_weights("fine_tune_inception.h5w")
+    my_model.fit(training_images,training_labels, batch_size=16, epochs=50,validation_data=(testing_images,testing_labels))
+    model.save_weights('my_model_weights.h5')
