@@ -29,6 +29,7 @@ from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.utils.np_utils import to_categorical
 
+from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint, History, CSVLogger
 
 def load_imgs(PATH,file_name,res,chennels):
     #print file_name
