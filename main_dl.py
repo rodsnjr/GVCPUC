@@ -201,7 +201,7 @@ if __name__ == "__main__":
     #In the summary, weights and layers from VGG part will be hidden, but they will be fit during the training
     my_model.summary()
 
-    model_json = model.to_json()
+    model_json = my_model.to_json()
     with open('./model.json', "w") as json_file:
         json_file.write(model_json)
 
