@@ -41,6 +41,21 @@ class ImageUI:
     
     def refresh(self):
         cv2.imshow(self.title, self.shown.image)
+    
+    def cropped_images(self, resolution):
+        height, width, channels = self.image.shape
+
+        left = self.image[0:height,0:width//3]
+        left = cv2.resize(left, (resolution, resolution)) 
+            
+        center = self.image[0:height,width//3:2*width//3]
+        center = cv2.resize(center, (resolution, resolution))
+
+        right = self.image[0:height,2*width//3:width]
+        right = cv2.resize(right, (resolution, resolution))
+
+        return {'left':left, 'center':center, 'right':right}
+
 
 class ImageShow: 
     def __init__(self, image):
@@ -84,6 +99,11 @@ class ImageShow:
     def change_label(self, position):
         self.labels[position].next()
         self.redraw()
+    
+    def change_labels(self, labels):
+        for key, val in labels.items():
+            self.labels[key].change(val)
+        self.redraw()
 
     def three_crop(self):
         self.w, self.h = self.image.shape[0], self.image.shape[1]
@@ -110,3 +130,15 @@ class Label:
     def next(self):
         self.current = self.current+1 if self.current < (len(Label.LABELS)-1) else 0
         self.label = Label.LABELS[self.current]
+    
+    def change(self, value):
+        self.current = translate(value)
+        self.label = Label.LABELS[self.current]
+
+def translate(a):
+    if a == 'indoor':
+        return 1
+    elif a == 'doors':
+        return 0
+    elif a == 'stairs':
+        return 2
