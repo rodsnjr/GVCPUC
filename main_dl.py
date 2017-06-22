@@ -28,6 +28,7 @@ from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.utils.np_utils import to_categorical
 
+from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint, History, CSVLogger
 
 def load_imgs(PATH,file_name,res,chennels):
     #print file_name
@@ -63,17 +64,17 @@ def load_imgs(PATH,file_name,res,chennels):
             counter_lbl+=1
     
         #separa as imagens e coloca uma em casa posicao..
-        buffer_img = img[0:height,0:width/3]
+        buffer_img = img[0:height,0:width//3]
         buffer_img = cv2.resize(buffer_img, (res, res)) 
         images[counter_img] = buffer_img
         counter_img+=1
     
-        buffer_img = img[0:height,width/3:2*width/3]
+        buffer_img = img[0:height,width//3:2*width//3]
         buffer_img = cv2.resize(buffer_img, (res, res)) 
         images[counter_img] =buffer_img
         counter_img+=1
     
-        buffer_img = img[0:height,2*width/3:width]
+        buffer_img = img[0:height,2*width//3:width]
         buffer_img = cv2.resize(buffer_img, (res, res)) 
         images[counter_img] =buffer_img
         counter_img+=1
@@ -164,11 +165,11 @@ if __name__ == "__main__":
         height_shift_range=0.2,
         horizontal_flip=True
     )
-    print ('---------------------------------------------')
-    print ('---------------------------------------------')
-    print ('Formato das imagens channel_last: (300,300,3)')
-    print ('---------------------------------------------')
-    print ('---------------------------------------------')
+    #print "---------------------------------------------"
+    #print "---------------------------------------------"
+    #print "Formato das imagens channel_last: (300,300,3)"
+    #print "---------------------------------------------"
+    #print "---------------------------------------------"
 
     training_images,training_labels = load_imgs(args.dir,args.training,300,3)
     testing_images,testing_labels = load_imgs(args.dir,args.testing,300,3)
@@ -181,7 +182,7 @@ if __name__ == "__main__":
 
     model_vgg16_conv = VGG16(weights='imagenet', include_top=False)
     print('Model loaded.')
-    print  (model_vgg16_conv.summary())
+    #print  model_vgg16_conv.summary()
 
     input = Input(shape=training_images[0].shape ,name = 'image_input')
     
@@ -198,10 +199,33 @@ if __name__ == "__main__":
     my_model = Model(input=input, output=x)
 
     #In the summary, weights and layers from VGG part will be hidden, but they will be fit during the training
-    print (my_model.summary())
+    my_model.summary()
 
- 
+    model_json = my_model.to_json()
+    with open('./model.json', "w") as json_file:
+        json_file.write(model_json)
+
+
     my_model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='binary_crossentropy',metrics=['accuracy'])
+
+
+
+    callbacks_list = []
+
+    batch_size = 2
+    epochs = 100
+
+    # checkpoint
+    filepath="./model_-{epoch:03d}-{val_loss:.4f}-{val_acc:.4f}.h5w"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=True, mode='auto', save_weights_only=True)
+    callbacks_list.append(checkpoint)
+
+    # CSVLogger
+    filepath="./model_log.csv"
+    csv = CSVLogger(filepath, separator=',', append=False)
+    callbacks_list.append(csv)
+
     # Depois que carrega a rede ...
-    my_model.fit(training_images,training_labels, batch_size=16, epochs=50,validation_data=(testing_images,testing_labels))
-    model.save_weights('my_model_weights.h5')
+    my_model.fit(training_images,training_labels, batch_size=batch_size, epochs=epochs,validation_data=(testing_images,testing_labels),callbacks=callbacks_list)
+ 
+    #python main_dl.py --dir E:/Datasets/door_e_indoor/ --training door_e_indoor_training.csv --testing door_e_indoor_testing.csv
