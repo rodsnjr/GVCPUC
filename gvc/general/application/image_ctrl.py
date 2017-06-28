@@ -20,7 +20,6 @@ class ImageController:
     # Start the Window/Controller Loop
     def start(self):
         self.load_progress()
-        
         self.view.load_image(self.files[self.current_file])
         self.view.show()
 
@@ -52,6 +51,7 @@ class ImageController:
     def next(self):
         if self.model is not None:
             self.model.add(self.files[self.current_file], self.view.shown.describe())
+            self.model.save()
         
         self.current_file += 1
         self.view.show_next(self.files[self.current_file])
@@ -104,12 +104,12 @@ class ClassifierCtrl:
         self.resolution = resolution
         self.graph = self.load_graph()
         self.label_lines = [line.rstrip() for line 
-                   in tf.gfile.GFile(resources.RESOURCES+"labels.txt")]
+                   in tf.gfile.GFile(resources.RESOURCES+"doors.txt")]
         
     def load_graph(self):
         # We load the protobuf file from the disk and parse it to retrieve the 
         # unserialized graph_def
-        with tf.gfile.FastGFile(resources.CLASSIFIERS+'/graph.pb', "rb") as f:
+        with tf.gfile.FastGFile(resources.CLASSIFIERS+'/doors.pb', "rb") as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
         

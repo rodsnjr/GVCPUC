@@ -2,11 +2,14 @@ from .csv_model import CSVModel
 from .image_ctrl import ImageController
 from .image_view import ImageUI
 
-from skimage import io
+import os
+
+def listdir_fullpath(d):
+    return [os.path.join(d, f) for f in os.listdir(d)]
 
 def launch(directory, csvwrite):
-    images = io.imread_collection(directory)
-    view = ImageUI()
+    images = listdir_fullpath(directory)
+    view = ImageUI(default_size=(300, 300))
     model = CSVModel(csvwrite)
-    ctrl = ImageController(view=view, model=model, files=images.files)
+    ctrl = ImageController(view=view, model=model, files=images)
     ctrl.start()
